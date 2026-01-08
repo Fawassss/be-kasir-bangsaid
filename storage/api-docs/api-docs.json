@@ -1,0 +1,51 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Kasir Boy API",
+        "description": "API Documentation for Kasir Boy Backend",
+        "contact": {
+            "email": "muhfawas7@gmail.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api": {
+            "get": {
+                "tags": [
+                    "Welcome"
+                ],
+                "summary": "Get a welcome text",
+                "operationId": "8b8d1009d6dece732f2fcb1b4c02210f",
+                "responses": {
+                    "200": {
+                        "description": "Successful"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Welcome",
+            "description": "Welcome"
+        }
+    ]
+}
