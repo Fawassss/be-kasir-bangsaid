@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'swagger.basic' => \App\Http\Middleware\SwaggerBasicAuth::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'cashier' => \App\Http\Middleware\CashierMiddleware::class,
         ]); 
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
     })
