@@ -313,7 +313,7 @@ class ProductController extends Controller
     }
 
     /**
-     * @OA\Put(
+     * @OA\Post(
      *     path="/api/admin/products/{id}",
      *     summary="Update product (Admin only)",
      *     tags={"Products"},

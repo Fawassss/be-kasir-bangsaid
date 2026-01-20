@@ -172,6 +172,7 @@ class UserController extends Controller
             'username' => 'required|string|max:255',
             'password' => 'required|string|min:8',
             'role' => ['required', Rule::in(['cashier', 'admin'])],
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -183,12 +184,19 @@ class UserController extends Controller
         }
 
         try {
-            $user = User::create([
+            $userData = [
                 'name' => $request->name,
                 'username' => $request->username,
                 'password' => Hash::make($request->password),
                 'role' => $request->role,
-            ]);
+            ];
+
+            // Handle profile photo upload
+            if ($request->hasFile('profile_photo')) {
+                $userData['profile_photo'] = $this->handleProfilePhotoUpload($request->file('profile_photo'));
+            }
+
+            $user = User::create($userData);
 
             return response()->json([
                 'success' => true,
@@ -315,6 +323,7 @@ class UserController extends Controller
                 'username' => 'sometimes|required|string|max:255',
                 'password' => 'sometimes|required|string|min:8|confirmed',
                 'role' => ['sometimes', 'required', Rule::in(['cashier', 'admin'])],
+                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ]);
 
             if ($validator->fails()) {
@@ -329,6 +338,16 @@ class UserController extends Controller
 
             if ($request->has('password')) {
                 $updateData['password'] = Hash::make($request->password);
+            }
+
+            // Handle profile photo upload
+            if ($request->hasFile('profile_photo')) {
+                // Delete old photo if exists
+                if ($user->profile_photo) {
+                    $this->deleteProfilePhoto($user->profile_photo);
+                }
+
+                $updateData['profile_photo'] = $this->handleProfilePhotoUpload($request->file('profile_photo'));
             }
 
             $user->update($updateData);
@@ -392,6 +411,11 @@ class UserController extends Controller
                 ], 400);
             }
 
+            // Delete profile photo if exists
+            if ($user->profile_photo) {
+                $this->deleteProfilePhoto($user->profile_photo);
+            }
+
             $user->delete();
 
             return response()->json([
@@ -404,6 +428,37 @@ class UserController extends Controller
                 'message' => 'Failed to delete user',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Handle profile photo upload
+     *
+     * @param \Illuminate\Http\UploadedFile $file
+     * @return string|null
+     */
+    private function handleProfilePhotoUpload($file)
+    {
+        if (!$file) {
+            return null;
+        }
+
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $file->storeAs('public/profile_photos', $filename);
+
+        return $filename;
+    }
+
+    /**
+     * Delete profile photo file
+     *
+     * @param string|null $filename
+     * @return void
+     */
+    private function deleteProfilePhoto($filename)
+    {
+        if ($filename && \Storage::exists('public/profile_photos/' . $filename)) {
+            \Storage::delete('public/profile_photos/' . $filename);
         }
     }
 }

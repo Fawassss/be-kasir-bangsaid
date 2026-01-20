@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 // Controllers
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\RajaOngkirController;
+use App\Http\Controllers\ProfileController;
 
 // Controllers Auth
 use App\Http\Controllers\Auth\AuthController;
@@ -47,6 +48,12 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile']);
     });
 
+    # Profile photo routes (Cashier & Admin can access)
+    Route::prefix('profile')->group(function () {
+        Route::post('/photo', [ProfileController::class, 'uploadPhoto']);
+        Route::delete('/photo', [ProfileController::class, 'deletePhoto']);
+    });
+
     # Public authenticated routes (Cashier & Admin can access)
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index']);
@@ -83,7 +90,7 @@ Route::middleware('auth:api')->group(function () {
 
         Route::prefix('products')->group(function () {
             Route::post('/', [ProductController::class, 'store']);
-            Route::put('/{id}', [ProductController::class, 'update']);
+            Route::post('/{id}', [ProductController::class, 'update']);
             Route::delete('/{id}', [ProductController::class, 'destroy']);
         });
 

@@ -882,12 +882,12 @@
             }
         },
         "/api/admin/products/{id}": {
-            "put": {
+            "post": {
                 "tags": [
                     "Products"
                 ],
                 "summary": "Update product (Admin only)",
-                "operationId": "1234c087b21bd1df187ed757f67000ea",
+                "operationId": "f13a0caa949a1255625e4a2b982eae79",
                 "parameters": [
                     {
                         "name": "id",
@@ -2309,6 +2309,115 @@
                 ]
             }
         },
+        "/api/profile/photo": {
+            "post": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Upload or update profile photo",
+                "operationId": "b225d63d704befc6e6325b03c8623c3f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "profile_photo"
+                                ],
+                                "properties": {
+                                    "profile_photo": {
+                                        "description": "Profile photo file (jpg, jpeg, png, max 2MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile photo updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Profile photo updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "profile_photo": {
+                                                    "type": "string",
+                                                    "example": "1234567890_abc123.jpg"
+                                                },
+                                                "profile_photo_url": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/storage/profile_photos/1234567890_abc123.jpg"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Delete profile photo",
+                "operationId": "00d5795cc5e221f569f4e902a7fbd7c2",
+                "responses": {
+                    "200": {
+                        "description": "Profile photo deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Profile photo deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No profile photo to delete"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/transactions": {
             "get": {
                 "tags": [
@@ -2595,6 +2704,10 @@
         {
             "name": "User Management",
             "description": "API for managing users (Admin only)"
+        },
+        {
+            "name": "Profile",
+            "description": "API for managing user profile (Cashier & Admin)"
         },
         {
             "name": "Transactions",
