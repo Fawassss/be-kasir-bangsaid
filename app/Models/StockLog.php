@@ -17,7 +17,8 @@ class StockLog extends Model
         'quantity' => 'integer',
     ];
 
-    public $timestamps = false;
+    const UPDATED_AT = null; // Disable updated_at
+    public $timestamps = true;
 
     /**
      * Get the product that owns the stock log.

@@ -40,16 +40,23 @@ class TransactionController extends Controller
      *         @OA\Schema(type="integer", example=10)
      *     ),
      *     @OA\Parameter(
+     *         name="date",
+     *         in="query",
+     *         description="Filter by specific date (Y-m-d) - for single day filter",
+     *         required=false,
+     *         @OA\Schema(type="string", example="2026-01-21")
+     *     ),
+     *     @OA\Parameter(
      *         name="start_date",
      *         in="query",
-     *         description="Filter by start date (Y-m-d)",
+     *         description="Filter by start date (Y-m-d) - for date range",
      *         required=false,
      *         @OA\Schema(type="string", example="2026-01-01")
      *     ),
      *     @OA\Parameter(
      *         name="end_date",
      *         in="query",
-     *         description="Filter by end date (Y-m-d)",
+     *         description="Filter by end date (Y-m-d) - for date range",
      *         required=false,
      *         @OA\Schema(type="string", example="2026-01-31")
      *     ),
@@ -75,18 +82,25 @@ class TransactionController extends Controller
     {
         try {
             $perPage = $request->get('per_page', 10);
+            $date = $request->get('date');
             $startDate = $request->get('start_date');
             $endDate = $request->get('end_date');
             $paymentMethod = $request->get('payment_method');
 
             $query = Transaction::with(['cashier:id,name,username', 'items']);
 
-            // Filter by date range
-            if ($startDate) {
-                $query->whereDate('created_at', '>=', $startDate);
+            // Filter by specific date (single day) - takes priority
+            if ($date) {
+                $query->whereDate('created_at', '=', $date);
             }
-            if ($endDate) {
-                $query->whereDate('created_at', '<=', $endDate);
+            // Filter by date range (if no specific date is provided)
+            else {
+                if ($startDate) {
+                    $query->whereDate('created_at', '>=', $startDate);
+                }
+                if ($endDate) {
+                    $query->whereDate('created_at', '<=', $endDate);
+                }
             }
 
             // Filter by payment method
@@ -130,8 +144,10 @@ class TransactionController extends Controller
      *                 type="array",
      *                 @OA\Items(
      *                     type="object",
-     *                     required={"product_id", "quantity"},
-     *                     @OA\Property(property="product_id", type="integer", example=1),
+     *                     @OA\Property(property="product_id", type="integer", example=1, description="Product ID (null for custom items)"),
+     *                     @OA\Property(property="is_custom", type="boolean", example=false, description="Is this a custom item?"),
+     *                     @OA\Property(property="custom_name", type="string", example="Gule Setengah Porsi", description="Required if is_custom=true"),
+     *                     @OA\Property(property="custom_price", type="integer", example=15000, description="Required if is_custom=true"),
      *                     @OA\Property(property="quantity", type="integer", example=2),
      *                     @OA\Property(property="note", type="string", example="Extra sugar")
      *                 )
@@ -159,7 +175,10 @@ class TransactionController extends Controller
             'payment_method' => 'required|in:cash,qris,debit',
             'cash_received' => 'required_if:payment_method,cash|nullable|integer|min:0',
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.is_custom' => 'nullable|boolean',
+            'items.*.custom_name' => 'required_if:items.*.is_custom,true|string|max:255',
+            'items.*.custom_price' => 'required_if:items.*.is_custom,true|integer|min:0',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.note' => 'nullable|string|max:500',
         ]);
@@ -180,29 +199,52 @@ class TransactionController extends Controller
 
             // Validate stock and calculate total
             foreach ($request->items as $item) {
-                $product = Product::lockForUpdate()->find($item['product_id']);
+                // Check if this is a custom item
+                if (isset($item['is_custom']) && $item['is_custom'] === true) {
+                    // Custom item - no product_id needed
+                    $subtotal = $item['custom_price'] * $item['quantity'];
+                    $totalPrice += $subtotal;
 
-                if (!$product) {
-                    throw new \Exception("Product with ID {$item['product_id']} not found");
+                    $itemsData[] = [
+                        'product' => null, // No product reference
+                        'product_name' => $item['custom_name'],
+                        'price' => $item['custom_price'],
+                        'quantity' => $item['quantity'],
+                        'subtotal' => $subtotal,
+                        'note' => $item['note'] ?? null,
+                    ];
+                } else {
+                    // Regular product item - existing logic
+                    if (!isset($item['product_id'])) {
+                        throw new \Exception("Product ID is required for non-custom items");
+                    }
+
+                    $product = Product::lockForUpdate()->find($item['product_id']);
+
+                    if (!$product) {
+                        throw new \Exception("Product with ID {$item['product_id']} not found");
+                    }
+
+                    if (!$product->is_active) {
+                        throw new \Exception("Product '{$product->name}' is not active");
+                    }
+
+                    if ($product->stock < $item['quantity']) {
+                        throw new \Exception("Insufficient stock for product '{$product->name}'. Available: {$product->stock}, Requested: {$item['quantity']}");
+                    }
+
+                    $subtotal = $product->price * $item['quantity'];
+                    $totalPrice += $subtotal;
+
+                    $itemsData[] = [
+                        'product' => $product,
+                        'product_name' => $product->name,
+                        'price' => $product->price,
+                        'quantity' => $item['quantity'],
+                        'subtotal' => $subtotal,
+                        'note' => $item['note'] ?? null,
+                    ];
                 }
-
-                if (!$product->is_active) {
-                    throw new \Exception("Product '{$product->name}' is not active");
-                }
-
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for product '{$product->name}'. Available: {$product->stock}, Requested: {$item['quantity']}");
-                }
-
-                $subtotal = $product->price * $item['quantity'];
-                $totalPrice += $subtotal;
-
-                $itemsData[] = [
-                    'product' => $product,
-                    'quantity' => $item['quantity'],
-                    'subtotal' => $subtotal,
-                    'note' => $item['note'] ?? null,
-                ];
             }
 
             // Validate cash payment
@@ -234,29 +276,32 @@ class TransactionController extends Controller
 
             // Create transaction items and reduce stock
             foreach ($itemsData as $itemData) {
-                $product = $itemData['product'];
-
                 // Create transaction item
                 TransactionItem::create([
                     'transaction_id' => $transaction->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'price' => $product->price,
+                    'product_id' => $itemData['product'] ? $itemData['product']->id : null,
+                    'product_name' => $itemData['product_name'],
+                    'price' => $itemData['price'],
                     'quantity' => $itemData['quantity'],
                     'subtotal' => $itemData['subtotal'],
                     'note' => $itemData['note'],
                 ]);
 
-                // Reduce stock
-                $product->decrement('stock', $itemData['quantity']);
+                // Only reduce stock if this is a regular product (not custom)
+                if ($itemData['product']) {
+                    $product = $itemData['product'];
 
-                // Create stock log
-                StockLog::create([
-                    'product_id' => $product->id,
-                    'type' => 'out',
-                    'quantity' => $itemData['quantity'],
-                    'description' => "Transaction: {$orderNumber}",
-                ]);
+                    // Reduce stock
+                    $product->decrement('stock', $itemData['quantity']);
+
+                    // Create stock log
+                    StockLog::create([
+                        'product_id' => $product->id,
+                        'type' => 'out',
+                        'quantity' => $itemData['quantity'],
+                        'description' => "Transaction: {$orderNumber}",
+                    ]);
+                }
             }
 
             DB::commit();

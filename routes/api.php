@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ShippingSettingController;
 use App\Http\Controllers\Admin\ProductQuantityDiscountController;
 use App\Http\Controllers\Admin\PrintTypeController;
+use App\Http\Controllers\Admin\StockController;
 
 // Controllers User
 use App\Http\Controllers\User\CartController;
@@ -92,6 +93,13 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/', [ProductController::class, 'store']);
             Route::post('/{id}', [ProductController::class, 'update']);
             Route::delete('/{id}', [ProductController::class, 'destroy']);
+        });
+
+        Route::prefix('stocks')->group(function () {
+            Route::get('/', [StockController::class, 'index']);
+            Route::get('/{id}', [StockController::class, 'show']);
+            Route::put('/{id}/adjust', [StockController::class, 'adjust']);
+            Route::get('/{id}/logs', [StockController::class, 'logs']);
         });
 
         Route::prefix('reports')->group(function () {

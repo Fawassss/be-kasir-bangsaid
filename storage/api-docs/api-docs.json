@@ -1408,6 +1408,354 @@
                 ]
             }
         },
+        "/api/admin/stocks": {
+            "get": {
+                "tags": [
+                    "Stock Management"
+                ],
+                "summary": "Get all product stocks with pagination",
+                "operationId": "f2bc0e7305c26c501b2f24eabca6b210",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by product name",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Coffee"
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter by category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by stock status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "low",
+                                "normal"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stock data retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Stock data retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Unauthorized - Admin access required"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/stocks/{id}": {
+            "get": {
+                "tags": [
+                    "Stock Management"
+                ],
+                "summary": "Get product stock detail by ID",
+                "operationId": "fb4e29a3ffd0875d8ea523c09d5cbfcb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stock detail retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Stock detail retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/stocks/{id}/adjust": {
+            "put": {
+                "tags": [
+                    "Stock Management"
+                ],
+                "summary": "Adjust product stock manually (Admin only)",
+                "operationId": "655066fabf9b80de905f1c73bc15c110",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "in",
+                                            "out"
+                                        ],
+                                        "example": "in"
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 20
+                                    },
+                                    "description": {
+                                        "description": "Optional description",
+                                        "type": "string",
+                                        "example": "Restock dari supplier ABC"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Stock adjusted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Stock adjusted successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/stocks/{id}/logs": {
+            "get": {
+                "tags": [
+                    "Stock Management"
+                ],
+                "summary": "Get stock change history for a product",
+                "operationId": "21c871878945fe8d437f02c6ed22e268",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filter by type",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "in",
+                                "out"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Filter by start date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-01-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Filter by end date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-01-31"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stock logs retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Stock logs retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/admin/users": {
             "get": {
                 "tags": [
@@ -2447,9 +2795,19 @@
                         }
                     },
                     {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Filter by specific date (Y-m-d) - for single day filter",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-01-21"
+                        }
+                    },
+                    {
                         "name": "start_date",
                         "in": "query",
-                        "description": "Filter by start date (Y-m-d)",
+                        "description": "Filter by start date (Y-m-d) - for date range",
                         "required": false,
                         "schema": {
                             "type": "string",
@@ -2459,7 +2817,7 @@
                     {
                         "name": "end_date",
                         "in": "query",
-                        "description": "Filter by end date (Y-m-d)",
+                        "description": "Filter by end date (Y-m-d) - for date range",
                         "required": false,
                         "schema": {
                             "type": "string",
@@ -2545,14 +2903,26 @@
                                     "items": {
                                         "type": "array",
                                         "items": {
-                                            "required": [
-                                                "product_id",
-                                                "quantity"
-                                            ],
                                             "properties": {
                                                 "product_id": {
+                                                    "description": "Product ID (null for custom items)",
                                                     "type": "integer",
                                                     "example": 1
+                                                },
+                                                "is_custom": {
+                                                    "description": "Is this a custom item?",
+                                                    "type": "boolean",
+                                                    "example": false
+                                                },
+                                                "custom_name": {
+                                                    "description": "Required if is_custom=true",
+                                                    "type": "string",
+                                                    "example": "Gule Setengah Porsi"
+                                                },
+                                                "custom_price": {
+                                                    "description": "Required if is_custom=true",
+                                                    "type": "integer",
+                                                    "example": 15000
                                                 },
                                                 "quantity": {
                                                     "type": "integer",
@@ -2700,6 +3070,10 @@
         {
             "name": "Reports",
             "description": "API for sales reports (Admin only)"
+        },
+        {
+            "name": "Stock Management",
+            "description": "API for managing product stock (Admin only)"
         },
         {
             "name": "User Management",
