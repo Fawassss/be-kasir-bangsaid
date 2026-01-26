@@ -1156,6 +1156,204 @@
                 ]
             }
         },
+        "/api/admin/reports/payment-methods": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get payment method report",
+                "operationId": "c59ffc913326b9c658ca516eaa95b1fe",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Start date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-01-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "End date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-01-31"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payment method report retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Payment method report retrieved successfully"
+                                        },
+                                        "summary": {
+                                            "properties": {
+                                                "total_transactions": {
+                                                    "type": "integer",
+                                                    "example": 395
+                                                },
+                                                "total_revenue": {
+                                                    "type": "integer",
+                                                    "example": 12180000
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "payment_method": {
+                                                        "type": "string",
+                                                        "example": "cash"
+                                                    },
+                                                    "transaction_count": {
+                                                        "type": "integer",
+                                                        "example": 145
+                                                    },
+                                                    "total_received": {
+                                                        "type": "integer",
+                                                        "example": 12500000
+                                                    },
+                                                    "percentage": {
+                                                        "type": "number",
+                                                        "example": 36.7
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/reports/categories": {
+            "get": {
+                "tags": [
+                    "Reports"
+                ],
+                "summary": "Get category sales report",
+                "operationId": "9c2984c1729120ce2d1273db9f64dc0f",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Start date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-01-01"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "End date (Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "2026-01-31"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category sales report retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category sales report retrieved successfully"
+                                        },
+                                        "summary": {
+                                            "properties": {
+                                                "total_products_sold": {
+                                                    "type": "integer",
+                                                    "example": 1045
+                                                },
+                                                "total_revenue": {
+                                                    "type": "integer",
+                                                    "example": 14000000
+                                                },
+                                                "average_per_item": {
+                                                    "type": "number",
+                                                    "example": 13397.13
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "category_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "category_name": {
+                                                        "type": "string",
+                                                        "example": "Makanan"
+                                                    },
+                                                    "products_sold": {
+                                                        "type": "integer",
+                                                        "example": 320
+                                                    },
+                                                    "transaction_count": {
+                                                        "type": "integer",
+                                                        "example": 145
+                                                    },
+                                                    "total_revenue": {
+                                                        "type": "integer",
+                                                        "example": 8500000
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/admin/reports/products": {
             "get": {
                 "tags": [

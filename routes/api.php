@@ -104,6 +104,8 @@ Route::middleware('auth:api')->group(function () {
 
         Route::prefix('reports')->group(function () {
             Route::get('/summary', [\App\Http\Controllers\Admin\ReportController::class, 'summary']);
+            Route::get('/payment-methods', [\App\Http\Controllers\Admin\ReportController::class, 'paymentMethodReport']);
+            Route::get('/categories', [\App\Http\Controllers\Admin\ReportController::class, 'categoryReport']);
             Route::get('/products', [\App\Http\Controllers\Admin\ReportController::class, 'productReport']);
             Route::get('/top-products', [\App\Http\Controllers\Admin\ReportController::class, 'topProducts']);
             Route::get('/daily-sales', [\App\Http\Controllers\Admin\ReportController::class, 'dailySales']);
