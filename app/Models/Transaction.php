@@ -38,24 +38,36 @@ class Transaction extends Model
     }
 
     /**
-     * Generate unique order number.
+     * Generate unique order number with random alphanumeric characters.
+     * Format: TRX-YYYYMMDD-XXXXXXXX (8 random alphanumeric characters)
      */
     public static function generateOrderNumber()
     {
         $date = date('Ymd');
         $prefix = 'TRX-' . $date . '-';
 
-        $lastTransaction = self::where('order_number', 'LIKE', $prefix . '%')
-            ->orderBy('order_number', 'desc')
-            ->first();
+        // Try to generate a unique order number (max 10 attempts)
+        $maxAttempts = 10;
+        $attempt = 0;
 
-        if ($lastTransaction) {
-            $lastNumber = (int) substr($lastTransaction->order_number, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
+        do {
+            // Generate 8 random alphanumeric characters (uppercase letters and numbers)
+            $randomString = strtoupper(substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 8));
+            $orderNumber = $prefix . $randomString;
 
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+            // Check if this order number already exists
+            $exists = self::where('order_number', $orderNumber)->exists();
+
+            $attempt++;
+
+            if (!$exists) {
+                return $orderNumber;
+            }
+
+        } while ($attempt < $maxAttempts);
+
+        // Fallback: use timestamp + random if all attempts failed (extremely unlikely)
+        $fallbackString = strtoupper(substr(md5(microtime()), 0, 8));
+        return $prefix . $fallbackString;
     }
 }
