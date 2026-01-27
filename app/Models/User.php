@@ -23,6 +23,7 @@ class User extends Authenticatable implements JWTSubject
         'username',
         'password',
         'role',
+        'profile_photo',
     ];
 
     /**
@@ -44,6 +45,26 @@ class User extends Authenticatable implements JWTSubject
         return [
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['profile_photo_url'];
+
+    /**
+     * Get the profile photo URL attribute.
+     *
+     * @return string|null
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        if ($this->profile_photo) {
+            return url('storage/profile_photos/' . $this->profile_photo);
+        }
+        return null;
     }
 
     /**

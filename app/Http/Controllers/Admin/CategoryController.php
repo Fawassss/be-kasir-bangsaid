@@ -3,26 +3,23 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 /**
  * @OA\Tag(
- *     name="User Management",
- *     description="API for managing users (Admin only)"
+ *     name="Categories",
+ *     description="API for managing categories (Admin only)"
  * )
  */
-class UserController extends Controller
+class CategoryController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/api/admin/users",
-     *     summary="Get all users with pagination",
-     *     tags={"User Management"},
+     *     path="/api/categories",
+     *     summary="Get all categories with pagination",
+     *     tags={"Categories"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="page",
@@ -41,30 +38,22 @@ class UserController extends Controller
      *     @OA\Parameter(
      *         name="search",
      *         in="query",
-     *         description="Search by username or email",
+     *         description="Search by category name",
      *         required=false,
-     *         @OA\Schema(type="string", example="john")
-     *     ),
-     *     @OA\Parameter(
-     *         name="role",
-     *         in="query",
-     *         description="Filter by role",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"cashier", "admin"})
+     *         @OA\Schema(type="string", example="Beverages")
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Users retrieved successfully",
+     *         description="Categories retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Users retrieved successfully"),
+     *             @OA\Property(property="message", type="string", example="Categories retrieved successfully"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="current_page", type="integer", example=1),
      *                 @OA\Property(property="data", type="array", 
      *                     @OA\Items(type="object",
      *                         @OA\Property(property="id", type="integer", example=1),
-     *                         @OA\Property(property="name", type="string", example="John Doe"),
-     *                         @OA\Property(property="role", type="string", enum={"cashier", "admin"}, example="cashier"),
+     *                         @OA\Property(property="name", type="string", example="Beverages"),
      *                         @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z"),
      *                         @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z")
      *                     )
@@ -94,36 +83,28 @@ class UserController extends Controller
         try {
             $perPage = $request->get('per_page', 10);
             $search = $request->get('search');
-            $role = $request->get('role');
 
-            $query = User::query();
+            $query = Category::query();
 
-            // Search by name or email
+            // Search by name
             if ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'LIKE', "%{$search}%");
-                });
-            }
-
-            // Filter by role
-            if ($role && in_array($role, ['cashier', 'admin'])) {
-                $query->where('role', $role);
+                $query->where('name', 'LIKE', "%{$search}%");
             }
 
             // Order by latest
             $query->orderBy('created_at', 'desc');
 
-            $users = $query->paginate($perPage);
+            $categories = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Users retrieved successfully',
-                'data' => $users
+                'message' => 'Categories retrieved successfully',
+                'data' => $categories
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to retrieve users',
+                'message' => 'Failed to retrieve categories',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -131,30 +112,26 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/admin/users",
-     *     summary="Create a new user",
-     *     tags={"User Management"},
+     *     path="/api/admin/categories",
+     *     summary="Create a new category (Admin only)",
+     *     tags={"Categories"},
      *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"name", "password", "role"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="username", type="string", example="john"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123"),
-     *             @OA\Property(property="role", type="string", enum={"cashier", "admin"}, example="cashier"),
+     *             required={"name"},
+     *             @OA\Property(property="name", type="string", example="Beverages"),
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="User created successfully",
+     *         description="Category created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="User created successfully"),
+     *             @OA\Property(property="message", type="string", example="Category created successfully"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="John Doe"),
-     *                 @OA\Property(property="role", type="string", enum={"cashier", "admin"}, example="cashier"),
+     *                 @OA\Property(property="name", type="string", example="Beverages"),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z")
      *             )
@@ -169,10 +146,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|max:255',
-            'password' => 'required|string|min:8',
-            'role' => ['required', Rule::in(['cashier', 'admin'])],
-            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'name' => 'required|string|max:255|unique:categories,name',
         ]);
 
         if ($validator->fails()) {
@@ -184,29 +158,19 @@ class UserController extends Controller
         }
 
         try {
-            $userData = [
+            $category = Category::create([
                 'name' => $request->name,
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'role' => $request->role,
-            ];
-
-            // Handle profile photo upload
-            if ($request->hasFile('profile_photo')) {
-                $userData['profile_photo'] = $this->handleProfilePhotoUpload($request->file('profile_photo'));
-            }
-
-            $user = User::create($userData);
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'User created successfully',
-                'data' => $user
+                'message' => 'Category created successfully',
+                'data' => $category
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create user',
+                'message' => 'Failed to create category',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -214,27 +178,26 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/users/{id}",
-     *     summary="Get user by ID",
-     *     tags={"User Management"},
+     *     path="/api/categories/{id}",
+     *     summary="Get category by ID",
+     *     tags={"Categories"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="User ID",
+     *         description="Category ID",
      *         required=true,
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="User retrieved successfully",
+     *         description="Category retrieved successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="User retrieved successfully"),
+     *             @OA\Property(property="message", type="string", example="Category retrieved successfully"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="John Doe"),
-     *                 @OA\Property(property="role", type="string", enum={"cashier", "admin"}, example="cashier"),
+     *                 @OA\Property(property="name", type="string", example="Beverages"),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z"),
      *             )
@@ -242,24 +205,24 @@ class UserController extends Controller
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="User not found"
+     *         description="Category not found"
      *     )
      * )
      */
     public function show($id)
     {
         try {
-            $user = User::findOrFail($id);
+            $category = Category::findOrFail($id);
 
             return response()->json([
                 'success' => true,
-                'message' => 'User retrieved successfully',
-                'data' => $user
+                'message' => 'Category retrieved successfully',
+                'data' => $category
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'User not found',
+                'message' => 'Category not found',
                 'error' => $e->getMessage()
             ], 404);
         }
@@ -267,37 +230,32 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *     path="/api/admin/users/{id}",
-     *     summary="Update user",
-     *     tags={"User Management"},
+     *     path="/api/admin/categories/{id}",
+     *     summary="Update category (Admin only)",
+     *     tags={"Categories"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="User ID",
+     *         description="Category ID",
      *         required=true,
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string", example="John Doe Updated"),
-     *             @OA\Property(property="username", type="string", example="john"),
-     *             @OA\Property(property="password", type="string", format="password", example="newpassword123"),
-     *             @OA\Property(property="role", type="string", enum={"cashier", "admin"}, example="cashier"),
+     *             @OA\Property(property="name", type="string", example="Beverages Updated"),
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="User updated successfully",
+     *         description="Category updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="User updated successfully"),
+     *             @OA\Property(property="message", type="string", example="Category updated successfully"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="name", type="string", example="John Doe Updated"),
-     *                 @OA\Property(property="username", type="string", example="john"),
-     *                 @OA\Property(property="role", type="string", enum={"cashier", "admin"}, example="cashier"),
+     *                 @OA\Property(property="name", type="string", example="Beverages Updated"),
      *                 @OA\Property(property="created_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2024-01-01T00:00:00.000000Z")
      *             )
@@ -305,7 +263,7 @@ class UserController extends Controller
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="User not found"
+     *         description="Category not found"
      *     ),
      *     @OA\Response(
      *         response=422,
@@ -316,14 +274,10 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $user = User::findOrFail($id);
+            $category = Category::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'name' => 'sometimes|required|string|max:255',
-                'username' => 'sometimes|required|string|max:255',
-                'password' => 'sometimes|required|string|min:8|confirmed',
-                'role' => ['sometimes', 'required', Rule::in(['cashier', 'admin'])],
-                'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'name' => 'required|string|max:255|unique:categories,name,' . $id,
             ]);
 
             if ($validator->fails()) {
@@ -334,33 +288,19 @@ class UserController extends Controller
                 ], 422);
             }
 
-            $updateData = $request->only(['name', 'username', 'role']);
-
-            if ($request->has('password')) {
-                $updateData['password'] = Hash::make($request->password);
-            }
-
-            // Handle profile photo upload
-            if ($request->hasFile('profile_photo')) {
-                // Delete old photo if exists
-                if ($user->profile_photo) {
-                    $this->deleteProfilePhoto($user->profile_photo);
-                }
-
-                $updateData['profile_photo'] = $this->handleProfilePhotoUpload($request->file('profile_photo'));
-            }
-
-            $user->update($updateData);
+            $category->update([
+                'name' => $request->name,
+            ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'User updated successfully',
-                'data' => $user->fresh()
+                'message' => 'Category updated successfully',
+                'data' => $category->fresh()
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update user',
+                'message' => 'Failed to update category',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -368,97 +308,47 @@ class UserController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/admin/users/{id}",
-     *     summary="Delete user",
-     *     tags={"User Management"},
+     *     path="/api/admin/categories/{id}",
+     *     summary="Delete category (Admin only)",
+     *     tags={"Categories"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="User ID",
+     *         description="Category ID",
      *         required=true,
      *         @OA\Schema(type="integer", example=1)
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="User deleted successfully",
+     *         description="Category deleted successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="User deleted successfully")
+     *             @OA\Property(property="message", type="string", example="Category deleted successfully")
      *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
-     *         description="Cannot delete currently logged in user"
-     *     ),
-     *     @OA\Response(
      *         response=404,
-     *         description="User not found"
+     *         description="Category not found"
      *     )
      * )
      */
     public function destroy($id)
     {
         try {
-            $user = User::findOrFail($id);
-            $currentUser = Auth::user();
-
-            // Prevent deleting currently logged in user
-            if ($user->id === $currentUser->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cannot delete currently logged in user'
-                ], 400);
-            }
-
-            // Delete profile photo if exists
-            if ($user->profile_photo) {
-                $this->deleteProfilePhoto($user->profile_photo);
-            }
-
-            $user->delete();
+            $category = Category::findOrFail($id);
+            $category->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => 'User deleted successfully'
+                'message' => 'Category deleted successfully'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete user',
+                'message' => 'Failed to delete category',
                 'error' => $e->getMessage()
             ], 500);
-        }
-    }
-
-    /**
-     * Handle profile photo upload
-     *
-     * @param \Illuminate\Http\UploadedFile $file
-     * @return string|null
-     */
-    private function handleProfilePhotoUpload($file)
-    {
-        if (!$file) {
-            return null;
-        }
-
-        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('public/profile_photos', $filename);
-
-        return $filename;
-    }
-
-    /**
-     * Delete profile photo file
-     *
-     * @param string|null $filename
-     * @return void
-     */
-    private function deleteProfilePhoto($filename)
-    {
-        if ($filename && \Storage::exists('public/profile_photos/' . $filename)) {
-            \Storage::delete('public/profile_photos/' . $filename);
         }
     }
 }
