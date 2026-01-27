@@ -72,13 +72,17 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/{id}', [\App\Http\Controllers\TransactionController::class, 'show']);
     });
 
+    # User routes - GET accessible by all authenticated users (for filtering)
+    Route::prefix('users')->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::get('/{id}', [UserController::class, 'show']);
+    });
+
     # Admin Routes (Admin only)
     Route::middleware('admin')->prefix('admin')->group(function () {
 
         Route::prefix('users')->group(function () {
-            Route::get('/', [UserController::class, 'index']);
             Route::post('/', [UserController::class, 'store']);
-            Route::get('/{id}', [UserController::class, 'show']);
             Route::put('/{id}', [UserController::class, 'update']);
             Route::delete('/{id}', [UserController::class, 'destroy']);
         });

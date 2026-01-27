@@ -20,7 +20,7 @@ class UserController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/api/admin/users",
+     *     path="/api/users",
      *     summary="Get all users with pagination",
      *     tags={"User Management"},
      *     security={{"bearerAuth":{}}},
@@ -84,8 +84,8 @@ class UserController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=403,
-     *         description="Unauthorized - Admin access required"
+     *         response=401,
+     *         description="Unauthorized - Authentication required"
      *     )
      * )
      */
@@ -214,7 +214,7 @@ class UserController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/admin/users/{id}",
+     *     path="/api/users/{id}",
      *     summary="Get user by ID",
      *     tags={"User Management"},
      *     security={{"bearerAuth":{}}},

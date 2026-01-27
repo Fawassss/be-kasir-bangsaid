@@ -3035,6 +3035,26 @@
                                 "debit"
                             ]
                         }
+                    },
+                    {
+                        "name": "cashier_id",
+                        "in": "query",
+                        "description": "Filter by cashier ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search by order number, cashier name, or cashier username",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "fawas"
+                        }
                     }
                 ],
                 "responses": {
