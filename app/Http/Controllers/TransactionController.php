@@ -67,6 +67,20 @@ class TransactionController extends Controller
      *         required=false,
      *         @OA\Schema(type="string", enum={"cash", "qris", "debit"})
      *     ),
+     *     @OA\Parameter(
+     *         name="cashier_id",
+     *         in="query",
+     *         description="Filter by cashier ID",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search by order number, cashier name, or cashier username",
+     *         required=false,
+     *         @OA\Schema(type="string", example="fawas")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Transactions retrieved successfully",
@@ -86,6 +100,8 @@ class TransactionController extends Controller
             $startDate = $request->get('start_date');
             $endDate = $request->get('end_date');
             $paymentMethod = $request->get('payment_method');
+            $cashierId = $request->get('cashier_id');
+            $search = $request->get('search');
 
             $query = Transaction::with(['cashier:id,name,username', 'items']);
 
@@ -106,6 +122,22 @@ class TransactionController extends Controller
             // Filter by payment method
             if ($paymentMethod && in_array($paymentMethod, ['cash', 'qris', 'debit'])) {
                 $query->where('payment_method', $paymentMethod);
+            }
+
+            // Filter by cashier ID
+            if ($cashierId) {
+                $query->where('cashier_id', $cashierId);
+            }
+
+            // Search by order number, cashier name, or cashier username
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('order_number', 'LIKE', "%{$search}%")
+                        ->orWhereHas('cashier', function ($q) use ($search) {
+                            $q->where('name', 'LIKE', "%{$search}%")
+                                ->orWhere('username', 'LIKE', "%{$search}%");
+                        });
+                });
             }
 
             // Order by latest
