@@ -472,4 +472,60 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/products/top-products",
+     *     summary="Get top 5 best selling products",
+     *     tags={"Products"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="category_id",
+     *         in="query",
+     *         description="Filter by category ID",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Top products retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Top products retrieved successfully"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
+    public function topProducts(Request $request)
+    {
+        try {
+            $categoryId = $request->get('category_id');
+
+            $query = Product::with('category')
+                ->withSum('transactionItems', 'quantity')
+                ->where('is_active', true)
+                ->orderBy('transaction_items_sum_quantity', 'desc')
+                ->limit(5);
+
+            // Filter by category
+            if ($categoryId) {
+                $query->where('category_id', $categoryId);
+            }
+
+            $products = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Top products retrieved successfully',
+                'data' => $products
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve top products',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

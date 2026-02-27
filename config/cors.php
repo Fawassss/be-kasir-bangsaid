@@ -24,15 +24,18 @@ return [
         'http://127.0.0.1:8000',
         'http://localhost:3000',
         'https://swift-kasir.vercel.app',
+        'https://tanner-earthlier-spiritualistically.ngrok-free.dev',
         'http://127.0.0.1:3000',
     ],
 
     'allowed_origins_patterns' => [
         'http://localhost:*',
         'http://127.0.0.1:*',
+        'https://*.vercel.app',
+        'https://*.ngrok-free.dev',
     ],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['*','ngrok-skip-browser-warning'],
 
     'exposed_headers' => [],
 

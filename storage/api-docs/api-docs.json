@@ -454,6 +454,79 @@
                 ]
             }
         },
+        "/api/admin/landing-configurations": {
+            "get": {
+                "tags": [
+                    "Landing Configuration"
+                ],
+                "summary": "Get landing page configuration",
+                "operationId": "e0937861e485836ba82dc3fb3344ec50",
+                "responses": {
+                    "200": {
+                        "description": "Landing configuration retrieved successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Landing Configuration"
+                ],
+                "summary": "Update landing page configuration",
+                "operationId": "41b3a1af5f625933a97f9b6187f90528",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "hero_image": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "hero_description": {
+                                        "type": "string"
+                                    },
+                                    "about_image_1": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "about_image_2": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "about_image_3": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "about_image_4": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "about_description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Landing configuration updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/products": {
             "get": {
                 "tags": [
@@ -1055,6 +1128,60 @@
                     },
                     "404": {
                         "description": "Product not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/products/top-products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get top 5 best selling products",
+                "operationId": "b42d2f1a83512c6cf11f397e55f09d3a",
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "description": "Filter by category ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Top products retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Top products retrieved successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1954,13 +2081,13 @@
                 ]
             }
         },
-        "/api/admin/users": {
+        "/api/users": {
             "get": {
                 "tags": [
                     "User Management"
                 ],
                 "summary": "Get all users with pagination",
-                "operationId": "2979f0297ab881ad0b8b86ee613f077b",
+                "operationId": "3265ab79c9b880008ed804d6b5e3059a",
                 "parameters": [
                     {
                         "name": "page",
@@ -2106,8 +2233,8 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Unauthorized - Admin access required"
+                    "401": {
+                        "description": "Unauthorized - Authentication required"
                     }
                 },
                 "security": [
@@ -2115,7 +2242,9 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/admin/users": {
             "post": {
                 "tags": [
                     "User Management"
@@ -2223,13 +2352,13 @@
                 ]
             }
         },
-        "/api/admin/users/{id}": {
+        "/api/users/{id}": {
             "get": {
                 "tags": [
                     "User Management"
                 ],
                 "summary": "Get user by ID",
-                "operationId": "bc1bd7b0a9c5c03d14165e230c9b74a1",
+                "operationId": "bd846808cf8adec596c3255d05e9eab0",
                 "parameters": [
                     {
                         "name": "id",
@@ -2303,7 +2432,9 @@
                         "bearerAuth": []
                     }
                 ]
-            },
+            }
+        },
+        "/api/admin/users/{id}": {
             "put": {
                 "tags": [
                     "User Management"
@@ -2855,6 +2986,20 @@
                 ]
             }
         },
+        "/api/landing-page": {
+            "get": {
+                "tags": [
+                    "Landing Page"
+                ],
+                "summary": "Get all data for landing page",
+                "operationId": "1a9e55cfcfe798b7eb7254a635da45d5",
+                "responses": {
+                    "200": {
+                        "description": "Landing page data retrieved successfully"
+                    }
+                }
+            }
+        },
         "/api/profile/photo": {
             "post": {
                 "tags": [
@@ -3100,10 +3245,16 @@
                         "application/json": {
                             "schema": {
                                 "required": [
+                                    "customer_name",
                                     "payment_method",
                                     "items"
                                 ],
                                 "properties": {
+                                    "customer_name": {
+                                        "description": "Customer's name",
+                                        "type": "string",
+                                        "example": "Budi Santoso"
+                                    },
                                     "payment_method": {
                                         "type": "string",
                                         "enum": [
@@ -3282,6 +3433,10 @@
             "description": "API for managing categories (Admin only)"
         },
         {
+            "name": "Landing Configuration",
+            "description": "API for managing landing page sections (Admin only)"
+        },
+        {
             "name": "Products",
             "description": "API for managing products (Admin only)"
         },
@@ -3308,6 +3463,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Landing Page",
+            "description": "Landing Page"
         },
         {
             "name": "Welcome",

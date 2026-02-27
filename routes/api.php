@@ -36,6 +36,7 @@ use App\Http\Controllers\User\PaymentController;
 
 // Public Routes
 Route::get('/', [WelcomeController::class, 'index']);
+Route::get('/landing-page', [\App\Http\Controllers\LandingPageController::class, 'index']);
 
 # Auth Routes (Public)
 Route::prefix('auth')->group(function () {
@@ -63,6 +64,7 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
+        Route::get('/top-products', [ProductController::class, 'topProducts']);
         Route::get('/{id}', [ProductController::class, 'show']);
     });
 
@@ -97,6 +99,11 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/', [ProductController::class, 'store']);
             Route::post('/{id}', [ProductController::class, 'update']);
             Route::delete('/{id}', [ProductController::class, 'destroy']);
+        });
+
+        Route::prefix('landing-configurations')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\LandingConfigurationController::class, 'index']);
+            Route::post('/', [\App\Http\Controllers\Admin\LandingConfigurationController::class, 'update']);
         });
 
         Route::prefix('stocks')->group(function () {

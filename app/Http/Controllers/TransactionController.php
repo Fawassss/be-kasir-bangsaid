@@ -168,7 +168,8 @@ class TransactionController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"payment_method", "items"},
+     *             required={"customer_name", "payment_method", "items"},
+     *             @OA\Property(property="customer_name", type="string", example="Budi Santoso", description="Customer's name"),
      *             @OA\Property(property="payment_method", type="string", enum={"cash", "qris", "debit"}, example="cash"),
      *             @OA\Property(property="cash_received", type="integer", example=100000, description="Required if payment_method is cash"),
      *             @OA\Property(
@@ -204,6 +205,7 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'customer_name' => 'required|string|max:255',
             'payment_method' => 'required|in:cash,qris,debit',
             'cash_received' => 'required_if:payment_method,cash|nullable|integer|min:0',
             'items' => 'required|array|min:1',
@@ -299,6 +301,7 @@ class TransactionController extends Controller
             // Create transaction
             $transaction = Transaction::create([
                 'order_number' => $orderNumber,
+                'customer_name' => $request->customer_name,
                 'cashier_id' => Auth::id(),
                 'payment_method' => $request->payment_method,
                 'total_price' => $totalPrice,

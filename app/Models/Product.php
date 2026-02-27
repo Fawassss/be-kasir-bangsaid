@@ -28,4 +28,12 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    /**
+     * Get the transaction items for the product.
+     */
+    public function transactionItems()
+    {
+        return $this->hasMany(TransactionItem::class);
+    }
 }
